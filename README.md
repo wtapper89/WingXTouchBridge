@@ -1,28 +1,46 @@
 # WING X-Touch Bridge
 
-A browser-configurable bridge that lets a Behringer X-Touch control a Behringer WING or WING Rack through a Raspberry Pi. It runs alongside Bitfocus Companion on a separate web port.
+Use a Behringer X-Touch to control a Behringer WING or WING Rack through a Raspberry Pi. Setup is done from a browser, and the bridge can run alongside Bitfocus Companion on the same Pi.
 
-## Features
+## What You Get
 
-- Map X-Touch channel strips 1-8 to any WING input channel, or leave a strip unassigned.
-- Use the ninth master fader for Main 1-4, Matrix 1-8, Aux 1-8, DCA 1-16, or nothing. It defaults to Main 1.
-- Keep motorized faders and mute LEDs synchronized with changes made on the WING.
-- Show live channel meters on the X-Touch.
-- Read channel names and colors from the WING and show them in browser dropdowns.
-- Match scribble-strip names and colors, with per-strip overrides.
-- Reconnect and restore the surface automatically after the X-Touch is power-cycled.
-- Configure everything from a browser on port `8088` by default.
+- Eight assignable X-Touch channel strips
+- A configurable master fader for Main 1-4, Matrix 1-8, Aux 1-8, or DCA 1-16
+- Two-way motor-fader and mute synchronization
+- Live X-Touch channel meters
+- WING channel names and colors on the scribble strips
+- Optional name and color overrides for every strip
+- Automatic recovery after restarting or power-cycling the X-Touch
+- A setup page on port `8088`, separate from Companion
 
-## Requirements
+## Before You Start
 
-- Raspberry Pi running Raspberry Pi OS or the Bitfocus Companion Pi image
-- Python 3
-- Behringer X-Touch connected to the Pi by USB
-- WING and Pi on the same network
+You need:
 
-## Quick Start
+- A Raspberry Pi running Raspberry Pi OS or the Bitfocus Companion Pi image
+- The Pi's IP address, username, and password
+- A Behringer X-Touch connected to the Pi with USB
+- A WING or WING Rack on the same network
+- The WING's IP address
 
-On the Raspberry Pi:
+## 1. Put The X-Touch In CTRL USB Mode
+
+1. Turn off the X-Touch.
+2. Hold the **Select** button on channel 1 while turning it on.
+3. Choose **CTRL** as the mode and **USB** as the interface.
+4. Confirm the selection on the X-Touch.
+
+CTRL USB is recommended because it supports the tested scribble-strip color messages. MC USB can show filled meter bars, but the tested color commands do not work in that mode.
+
+## 2. Install On The Raspberry Pi
+
+Open Terminal on your computer and connect to the Pi. Replace `PI-IP-ADDRESS` with the Pi's address:
+
+```bash
+ssh pi@PI-IP-ADDRESS
+```
+
+If your Companion image uses a different username, replace `pi` with that username. Enter the Pi password when asked, then run:
 
 ```bash
 git clone https://github.com/wtapper89/WingXTouchBridge.git
@@ -31,35 +49,50 @@ chmod +x install_on_pi.sh
 sudo ./install_on_pi.sh
 ```
 
-The installer prints the setup-page address when it finishes. Open that address from a browser, normally:
+The first installation can take several minutes. The last line prints the browser address for the setup page.
+
+## 3. Open The Setup Page
+
+From a computer on the same network, open:
 
 ```text
 http://PI-IP-ADDRESS:8088/
 ```
 
-Then:
+For example, a Pi at `192.168.1.50` uses `http://192.168.1.50:8088/`.
 
-1. Enter the WING IP address.
-2. Choose the X-Touch MIDI input and output, or leave both on Auto.
-3. Choose `CTRL USB` for working scribble-strip colors.
-4. Press **Refresh WING sources**.
-5. Assign the eight channel strips and choose the **Master Fader Target**.
-6. Press **Save settings**.
+Enter the WING IP address. Leave the OSC port at `2223` and TCP port at `2222`. MIDI Input and MIDI Output can normally remain on **Auto**.
 
-Settings are stored in `/etc/wing-xtouch-bridge/config.json` and survive restarts.
+Under **X-Touch Behavior**:
 
-## X-Touch Mode
+1. Choose **CTRL USB** for Surface Mode.
+2. Leave Physical 0 dB Position at `0.731` unless calibration is needed.
+3. Choose the large fader's destination under **Master Fader Target**. It defaults to **Main Output 1**.
 
-Power on the X-Touch while holding the first channel Select button to change its operating mode.
+![Connection and master-fader settings](docs/images/setup-and-master.jpg)
 
-- **CTRL USB** is recommended. It supports the tested Behringer color messages. Its channel meters display a moving level LED because that is how the X-Touch firmware handles meter messages in CTRL mode.
-- **MC USB** can display filled meter bars, but the X-Touch does not apply the tested scribble-strip color commands in this mode.
+## 4. Assign The Eight Channel Strips
 
-The physical mode and the **Surface Mode** choice on the setup page must match.
+1. Press **Refresh WING sources**.
+2. Use each Source dropdown to choose a WING channel.
+3. Choose **None** when a strip should be unused.
+4. Enable **Override name** or **Override color** only when the X-Touch should differ from the WING.
 
-## Master Fader
+The bridge normally copies each selected channel's current WING name and color automatically.
 
-The large ninth fader controls Main Output 1 by default. The setup page can assign it to:
+![Channel-strip mapping controls](docs/images/strip-mapping.jpg)
+
+## 5. Save And Test
+
+Press **Save settings**. The bridge immediately reloads the surface and keeps the settings after Pi restarts.
+
+The buttons at the bottom can test fader movement, colors, meters, and MIDI detection. Most users should leave the OSC paths and button values at their defaults.
+
+![Advanced settings and test controls](docs/images/advanced-and-save.jpg)
+
+## Master Fader Choices
+
+The large ninth fader can control:
 
 - Main Output 1-4
 - Matrix 1-8
@@ -67,17 +100,18 @@ The large ninth fader controls Main Output 1 by default. The setup page can assi
 - DCA 1-16
 - None
 
-The bridge listens for WING feedback, so moving the selected target in WING Edit or on the console also moves the X-Touch master fader.
+Moving the assigned output in WING Edit or on the console moves the X-Touch master fader too.
 
-## Service Commands
+## Meter Behavior
 
-```bash
-sudo systemctl status wing-xtouch-bridge
-sudo systemctl restart wing-xtouch-bridge
-sudo journalctl -u wing-xtouch-bridge -f
-```
+- **CTRL USB:** a single illuminated meter LED moves with the signal level. This is how the X-Touch firmware handles meter messages in CTRL mode.
+- **MC USB:** filled meter bars are available, but the tested scribble-strip colors are not.
 
-## Updating
+The physical X-Touch mode and the **Surface Mode** selected in the browser must match.
+
+## Updating Later
+
+Connect to the Pi again and run:
 
 ```bash
 cd WingXTouchBridge
@@ -85,16 +119,43 @@ git pull
 sudo ./install_on_pi.sh
 ```
 
-The installer keeps an existing configuration file when updating.
+The installer keeps the existing settings.
 
 ## Troubleshooting
 
-- If the surface is blank, confirm the MIDI input and output on the setup page. The bridge checks for reconnects automatically.
-- If colors do not change, confirm both the physical X-Touch mode and browser setting are `CTRL USB`.
-- If faders move to the wrong level, adjust **Physical 0 dB Position**. The tested default is `0.731`.
-- If no WING sources appear, verify the WING IP and that TCP port `2222` and OSC port `2223` are reachable.
-- Companion and this bridge can run together because the bridge uses web port `8088`.
+**The X-Touch is blank after power-up**
 
-## Security
+Wait about five seconds. The bridge checks for the device and restores the surface automatically. If it remains blank, press **Refresh MIDI devices** and confirm the MIDI input and output.
 
-The setup page has no login. Run it only on a trusted control network and do not expose port `8088` to the public internet.
+**Colors do not change**
+
+Confirm that both the physical X-Touch mode and the browser's Surface Mode are set to **CTRL USB**.
+
+**Faders move to the wrong level**
+
+Set **Physical 0 dB Position** to `0.731`. Adjust it slightly only if the X-Touch's printed 0 dB mark still differs from the WING.
+
+**No WING sources appear**
+
+Confirm the WING IP address and make sure TCP port `2222` and OSC port `2223` are reachable between the Pi and WING.
+
+**Open the service log**
+
+```bash
+sudo journalctl -u wing-xtouch-bridge -f
+```
+
+Press `Ctrl+C` to exit the log.
+
+## Service Commands
+
+```bash
+sudo systemctl status wing-xtouch-bridge
+sudo systemctl restart wing-xtouch-bridge
+```
+
+Settings are stored at `/etc/wing-xtouch-bridge/config.json`.
+
+## Network Safety
+
+The setup page has no login. Use it only on a trusted control network, and do not expose port `8088` to the public internet.
