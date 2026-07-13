@@ -1,0 +1,59 @@
+{
+  "web_host": "0.0.0.0",
+  "web_port": 8088,
+  "wing_host": "192.168.1.100",
+  "wing_port": 2223,
+  "wing_tcp_port": 2222,
+  "midi_input": "",
+  "midi_output": "",
+  "midi_device_hint": "X-TOUCH",
+  "fader_mode": "absolute",
+  "fader": {
+    "min_db": -144.0,
+    "zero_db_position": 0.731,
+    "max_db": 10.0
+  },
+  "xtouch": {
+    "surface_mode": "ctrl",
+    "color_mode": "mcu-72",
+    "meter_mode": "mcu-packed-aftertouch",
+    "meter_gain_db": 12.0
+  },
+  "master_fader": {
+    "enabled": true,
+    "type": "main",
+    "number": 1
+  },
+  "log_midi": false,
+  "osc": {
+    "fader_path": "/ch/{channel}/fdr",
+    "mute_path": "/ch/{channel}/mute",
+    "solo_path": "/ch/{channel}/$solo",
+    "select_path": "",
+    "meter_path": "",
+    "source_name_path": "/ch/{channel}/$name",
+    "source_color_path": "/ch/{channel}/col",
+    "mute_on_value": 1,
+    "mute_off_value": 0,
+    "solo_on_value": 1,
+    "solo_off_value": 0,
+    "select_on_value": 1,
+    "select_off_value": 0
+  },
+  "source_scan": {
+    "first_channel": 1,
+    "last_channel": 32,
+    "timeout_ms": 120,
+    "transport": "auto"
+  },
+  "strips": [
+    { "xtouch": 1, "wing_channel": 1, "name": "", "color": "", "override_name": false, "override_color": false, "enabled": true },
+    { "xtouch": 2, "wing_channel": 2, "name": "", "color": "", "override_name": false, "override_color": false, "enabled": true },
+    { "xtouch": 3, "wing_channel": 3, "name": "", "color": "", "override_name": false, "override_color": false, "enabled": true },
+    { "xtouch": 4, "wing_channel": 4, "name": "", "color": "", "override_name": false, "override_color": false, "enabled": true },
+    { "xtouch": 5, "wing_channel": 5, "name": "", "color": "", "override_name": false, "override_color": false, "enabled": true },
+    { "xtouch": 6, "wing_channel": 6, "name": "", "color": "", "override_name": false, "override_color": false, "enabled": true },
+    { "xtouch": 7, "wing_channel": 7, "name": "", "color": "", "override_name": false, "override_color": false, "enabled": true },
+    { "xtouch": 8, "wing_channel": 8, "name": "", "color": "", "override_name": false, "override_color": false, "enabled": true }
+  ]
+}

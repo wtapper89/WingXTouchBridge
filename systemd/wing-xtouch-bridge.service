@@ -1,0 +1,18 @@
+[Unit]
+Description=Behringer X-Touch to WING Rack bridge
+After=network-online.target sound.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/wing-xtouch-bridge
+ExecStart=/opt/wing-xtouch-bridge/.venv/bin/python /opt/wing-xtouch-bridge/app.py
+Restart=on-failure
+RestartSec=3
+User=pi
+Group=pi
+Environment=PYTHONUNBUFFERED=1
+Environment=WXB_CONFIG=/etc/wing-xtouch-bridge/config.json
+
+[Install]
+WantedBy=multi-user.target
