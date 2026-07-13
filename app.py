@@ -683,6 +683,16 @@ class Bridge:
         number = max(minimum, min(maximum, int(target.get("number", 1) or 1)))
         return f"/{target_type}/{number}/fdr"
 
+    @staticmethod
+    def _fader_db(args):
+        # WING query replies contain display text, normalized position, then dB.
+        if len(args) >= 3:
+            try:
+                return float(args[2])
+            except (TypeError, ValueError):
+                pass
+        return args[0] if args else FADER_MIN_DB
+
     def _set_button_state(self, kind, xtouch, enabled):
         state_key = f"{kind}:{int(xtouch)}"
         with self.button_state_lock:
@@ -769,13 +779,13 @@ class Bridge:
         self.update_status(last_wing=f"{address} {args[0] if args else ''}")
         master_path = self._master_fader_path(config)
         if args and master_path and address in (master_path, self._feedback_path(master_path)):
-            self._send_motor_fader(9, args[0])
+            self._send_motor_fader(9, self._fader_db(args))
             return
         strip, kind = self._mapped_strip_for_wing_path(config, address)
         if not strip or not args:
             return
         if kind == "fader":
-            self._send_motor_fader(strip.get("xtouch", 1), args[0])
+            self._send_motor_fader(strip.get("xtouch", 1), self._fader_db(args))
         elif kind in ("mute", "solo", "select"):
             self._set_button_state(kind, strip.get("xtouch", 1), self._is_on_value(kind, args[0], config))
         elif kind == "meter":
